@@ -1,0 +1,190 @@
+---
+title: "The impact of state public health expenditure on the number of state level foodborne illness"
+date: "February 21, 2020"
+output: 
+    html_document:
+      theme: journal
+      toc: true
+      toc_float: true
+      code_folding: hide
+      
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+(a)  A description of the data set and the source:
+
+The data includes 3 main sources of data by State from 2008 to 2013. 
+
+The first part is the state level public health expenditure from the State Health Expenditure Dataset (SHED). SHED collects records from state budget across the country from 2000-2013 provided by the us Census. (Rednick, et al., 2017) We only use data from 2008 to 2013 because the codebook suggests that some records were not included in this data because the US Census received them in paper format. 
+
+The second part is the state level foodborne illness data, which is from the Morbidity and Mortality Weekly Report. This data includes reported cases of some notifiable diseases by state by year. 
+
+The third part of this data is from the Consumer Expenditure Survey (dairy), which include state level average expenditure for different food categories per person in a 2 weeks long time period. The Consumer Expenditure Sruvery asks participants to record their daily expenditures, which includes very detailed expenditures in small food categories.
+
+We also add state population, median households income, extreme weather conditions by year.
+
+(b)  A table with some summary statistics: this table include state level overall illness cases per year, and the public health expenditures per year.
+
+```{r message=FALSE, warning=FALSE}
+library(ggplot2)
+library(tibble)
+library(tidyr)
+library(readr)
+library(dplyr)
+library(stringr)
+library(forcats)
+library(tidyverse)
+library(ggmap)
+library(stats)
+library(stargazer)
+library(usmap)
+library(haven)
+library(kableExtra)
+library(readxl)
+library(usmap)
+library(doBy)
+library(stargazer)
+library(tibble)
+library(forcats)
+
+Publicexpd_illness_CEX08_13 <- read_excel("project.xlsx")
+```
+
+
+```{r message=FALSE, warning=FALSE}
+public <- read_excel("project.xlsx", col_types = c("text", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric" , "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric","numeric", "numeric", "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric","numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric","numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric",   "numeric", "numeric", "numeric", "numeric", "numeric",    "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric",   "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric",  "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
+
+```
+
+```{r message=FALSE, warning=FALSE}
+public%>%
+  group_by(state)%>%
+  summarise("Peopel get ill in 2008" =sum( Botulism_08,Brucellosis_08,Campylobacter_08,  Cholera_08,Cryptosporidiosis_08, Cyclosporiasis...8,STEC_08,`E Coli non-O157_08`,`E Coli O157_08`,`E Coli other_08`, Giardiasis_08,HUS_08,`Hepatitis A_08`,Listeriosis_08,Salmonellosis_08,Shigellosis_08,`Typhoid Fever_08`,StrepA_08,Trichinosis_08, Vibriosis_08,na.rm=TRUE),
+            "Peopel get ill in 2009" =sum( Botulism_09,Brucellosis_09,Campylobacter_09,  Cholera_09,Cryptosporidiosis_09,  Cyclosporiasis...64,STEC_09,`E Coli non-O157_09`,`E Coli O157_09`,`E Coli other_09`, Giardiasis_09,HUS_09,`Hepatitis A_09`,Listeriosis_09,Salmonellosis_09,Shigellosis_09,`Typhoid Fever_09`,StrepA_09,Trichinosis_09, Vibriosis_09,na.rm=TRUE),
+            "Peopel get ill in 2010" =sum( Botulism_10,Brucellosis_10,Campylobacter_10,  Cholera_10,Cryptosporidiosis_10,  Cyclosporiasis...120,STEC_10,`E Coli non-O157_10`,`E Coli O157_10`,`E Coli other_10`, Giardiasis_10,HUS_10,`Hepatitis A_10`,Listeriosis_10,Salmonellosis_10,Shigellosis_10,`Typhoid Fever_10`,StrepA_10,Trichinosis_10, Vibriosis_10,na.rm=TRUE),
+            "Peopel get ill in 2011" =sum( Botulism_11,Brucellosis_11,Campylobacter_11,  Cholera_11,Cryptosporidiosis_11,  Cyclosporiasis...176,STEC_11,`E Coli non-O157_11`,`E Coli O157_11`,`E Coli other_11`, Giardiasis_11,HUS_11,`Hepatitis A_11`,Listeriosis_11,Salmonellosis_11,Shigellosis_11,`Typhoid Fever_11`,StrepA_11,Trichinosis_11, Vibriosis_11,na.rm=TRUE),
+            "Peopel get ill in 2012" =sum( Botulism_12,Brucellosis_12,Campylobacter_12,  Cholera_12,Cryptosporidiosis_12,  Cyclosporiasis...232,STEC_12,`E Coli non-O157_12`,`E Coli O157_12`,`E Coli other_12`, Giardiasis_12,HUS_12,`Hepatitis A_12`,Listeriosis_12,Salmonellosis_12,Shigellosis_12,`Typhoid Fever_12`,StrepA_12,Trichinosis_12, Vibriosis_12,na.rm=TRUE),
+            "Peopel get ill in 2013" =sum( Botulism_13,Brucellosis_13,Campylobacter_13,  Cholera_13,Cryptosporidiosis_13,  Cyclosporiasis...288,STEC_13,`E Coli non-O157_13`,`E Coli O157_13`,`E Coli other_13`, Giardiasis_13,HUS_13,`Hepatitis A_13`,Listeriosis_13,Salmonellosis_13,Shigellosis_13,`Typhoid Fever_13`,StrepA_13,Trichinosis_13, Vibriosis_13,na.rm=TRUE),
+            "Total Expenditure 2008"=expd_08,
+            "Total Expenditure 2009"=expd_09,
+            "Total Expenditure 2010"=expd_10,
+            "Total Expenditure 2011"=expd_11,
+            "Total Expenditure 2012"=expd_12,
+            "Total Expenditure 2013"=expd_13)%>%
+  knitr::kable() %>%
+  kable_styling("striped", "hover", full_width=F) %>%
+  row_spec(1) %>%
+  column_spec(1)
+```
+
+
+
+(c)  A visual representation of data: the first map shows the average state level salmonellosis rate in percents from 2008 to 2013, and the second map shows the average state level Shigellosis rate in percents from 2008 to 2013.
+
+```{r  warning=FALSE}
+state_level_Salmonellosis08<- public %>%
+group_by(state) %>%
+  summarise(ave_rate=(Salmonellosis_08+Salmonellosis_09+Salmonellosis_10+Salmonellosis_11+Salmonellosis_12+Salmonellosis_13)*100/(Population_08+Population_09+Population_10+Population_11+Population_12+Population_13))
+  
+
+plot_usmap(data = state_level_Salmonellosis08, values = "ave_rate", lines = "black") + 
+  scale_fill_continuous(name = "Average Salmonellosis % 2008-2013")+
+  theme(legend.position = "right")
+
+```
+```{r  warning=FALSE}
+state_level_Shigellosis08<- public %>%
+group_by(state) %>%
+  summarise(ave_rate=(Shigellosis_08+Shigellosis_09+Shigellosis_10+Shigellosis_11+Shigellosis_12+Shigellosis_13)*100/(Population_08+Population_09+Population_10+Population_11+Population_12+Population_13))
+  
+
+plot_usmap(data = state_level_Shigellosis08, values = "ave_rate", lines = "black") + 
+  scale_fill_continuous(name = "Average Shigellosis % 2008-2013")+
+  theme(legend.position = "right")
+
+```
+
+
+## Model
+
+```{r regression, message=FALSE, warning=FALSE}
+regBotulism<-lm(incrate_Botulism~capita_expd_foodsaf+capita_expd_foodsaf_lag1+ as.factor(state_num),data=alldata)
+
+regBrucellosis<-lm(incrate_Brucellosis~capita_expd_foodsaf+capita_expd_foodsaf_lag1+ as.factor(state_num),data=alldata)
+
+regCholera<-lm(incrate_Cholera~capita_expd_foodsaf+capita_expd_foodsaf_lag1+ as.factor(state_num),data=alldata)
+
+regCryptosporidiosis<-lm(incrate_Cryptosporidiosis~capita_expd_foodsaf+capita_expd_foodsaf_lag1+ as.factor(state_num),data=alldata)
+
+regCyclosporiasis<-lm(incrate_Cyclosporiasis~capita_expd_foodsaf+capita_expd_foodsaf_lag1+ as.factor(state_num),data=alldata)
+
+regSTEC<-lm(incrate_STEC~capita_expd_foodsaf+capita_expd_foodsaf_lag1+ as.factor(state_num),data=alldata)
+
+regGiardiasis<-lm(incrate_Giardiasis~capita_expd_foodsaf+capita_expd_foodsaf_lag1+ as.factor(state_num),data=alldata)
+
+regHUS<-lm(incrate_HUS~capita_expd_foodsaf+capita_expd_foodsaf_lag1+ as.factor(state_num),data=alldata)
+
+regHepatitisA<-lm(incrate_HepatitisA~capita_expd_foodsaf+capita_expd_foodsaf_lag1+ as.factor(state_num),data=alldata)
+
+regListeriosis<-lm(incrate_Listeriosis~capita_expd_foodsaf+capita_expd_foodsaf_lag1+ as.factor(state_num),data=alldata)
+
+regSalmonellosis<-lm(incrate_Salmonellosis~capita_expd_foodsaf+capita_expd_foodsaf_lag1+ as.factor(state_num),data=alldata)
+
+regTyphoidFever<-lm(incrate_TyphoidFever~capita_expd_foodsaf+capita_expd_foodsaf_lag1+ as.factor(state_num),data=alldata)
+
+regTrichinosis<-lm(incrate_Trichinosis~capita_expd_foodsaf+capita_expd_foodsaf_lag1+ as.factor(state_num),data=alldata)
+
+regVibriosis<-lm(incrate_Vibriosis~capita_expd_foodsaf+capita_expd_foodsaf_lag1+ as.factor(state_num),data=alldata)
+
+```
+
+## Fixed Effect Regression Results
+```{r table, message=FALSE, results="asis"}
+stargazer(regBotulism,regBrucellosis,regCholera,regCryptosporidiosis,regCyclosporiasis,
+          type= "html",
+          omit = c("state_num"),
+          title = "Table 1", 
+          dep.var.labels = c("Incidence per 100,000 persons","Incidence per 100,000 persons","Incidence per 100,000 persons","Incidence per 100,000 persons","Incidence per 100,000 persons"),
+          covariate.labels = c("State Food Safety Expenditure per Capita This Year", "State Food Safety Expenditure per Capita Last Year"),
+          omit.stat = c("rsq", "adj.rsq", "ser", "f"),
+          single.row = FALSE,
+          column.separate = c(1,1,1,1,1),
+          multicolumn = TRUE,
+          column.labels = c("Botulism","Brucellosis","Cholera", "Cryptosporidiosis", "Cyclosporiasis"),
+          notes = "State Fixed Effect Controlled")       
+
+stargazer(regSTEC,regGiardiasis,regHUS,regHepatitisA,regListeriosis,
+          type= "html",
+          omit = c("state_num"),
+          title = "Table 2", 
+          dep.var.labels = c("Incidence per 100,000 persons","Incidence per 100,000 persons","Incidence per 100,000 persons","Incidence per 100,000 persons","Incidence per 100,000 persons"),
+          covariate.labels = c("State Food Safety Expenditure per Capita This Year", "State Food Safety Expenditure per Capita Last Year"),
+          omit.stat = c("rsq", "adj.rsq", "ser", "f"),
+          single.row = FALSE,
+          column.separate = c(1,1,1,1,1),
+          multicolumn = TRUE,
+          column.labels = c("STEC","Giardiasis","HUS", "HepatitisA", "Listeriosis"),
+          notes = "State Fixed Effect Controlled")   
+
+stargazer(regSalmonellosis,regTyphoidFever,regTrichinosis,regVibriosis,
+          type= "html",
+          omit = c("state_num"),
+          title = "Table 3", 
+          dep.var.labels = c("Incidence per 100,000 persons","Incidence per 100,000 persons","Incidence per 100,000 persons","Incidence per 100,000 persons"),
+          covariate.labels = c("State Food Safety Expenditure per Capita This Year", "State Food Safety Expenditure per Capita Last Year"),
+          omit.stat = c("rsq", "adj.rsq", "ser", "f"),
+          single.row = FALSE,
+          column.separate = c(1,1,1,1),
+          multicolumn = TRUE,
+          column.labels = c("Salmonellosis","TyphoidFever","Trichinosis", "Vibriosis"),
+          notes = "State Fixed Effect Controlled")   
+```
+
+## Summary
+We used a fixed effect model to investigate the relationship between State level public health-food safety expenditure per capita and incidence per 100,000 persons for different foodborn illness from 2009-2013. The dependent variable is calculated from state level illness cases divided by state population and mulituplied by 100,000. Thr independent variables include state level food safety expdniture for this year, and a lag expdniture, which is for last year. The state fixed effect is included in the regression, and omitted in result tables. From the results, we find for Cyclosporiasis, there is a negative relationship between last year state food safety expenditure and incidents; for Giardisis, there is negative relationship between incidents and both this year and last year food safety expenditure per capita; for Vibriosis, we have a positive relatioship between this year food safety expenditure and incidence. Unfortunately, we did not find any other statistically significant results for other illness.
+
+
+
+
