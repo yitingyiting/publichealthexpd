@@ -1,2 +1,2 @@
-# The impact of state public health expenditure on state level foodborne illness
+# The impact of state public health expenditure on state level foodborne illness (R)
 In this project, I want to investigate the effect of state-level health expenditure on foodborne illness, instead of the country level. We use 2 data to inspect the relationship between health expenditure and foodborne illness on the state-level, and we find that there is some significant relationship between food safety expenditure and some type of diseases but not all of them.
